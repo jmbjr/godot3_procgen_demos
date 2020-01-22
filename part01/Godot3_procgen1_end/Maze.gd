@@ -1,22 +1,49 @@
 extends Node2D
 
-const N = 1
-const E = 2
-const S = 4
-const W = 8
+const NN = 1
+const EE = 2
+const SS = 4
+const WW = 8
 
-var cell_walls = {Vector2(0, -1): N, Vector2(1, 0): E, 
-				  Vector2(0, 1): S, Vector2(-1, 0): W}
+var N
+var E
+var S
+var W
 
+const ICON = 0
+const NO_ICON = -1
+
+export var use_yield = true
+export var use_single_tile = false
+
+
+var cell_walls
 var tile_size = 64  # tile size (in pixels)
 var width = 20  # width of map (in tiles)
 var height = 12  # height of map (in tiles)
 
 # get a reference to the map for convenience
 onready var Map = $TileMap
+onready var Map2 = $TileMap2
+
+onready var start_time = OS.get_ticks_msec()
 
 func _ready():
 	randomize()
+	if use_single_tile:
+		N = 0
+		S = 0
+		E = 0
+		W = 0
+	else:
+		N = NN
+		S = SS
+		E = EE
+		W = WW
+	
+	cell_walls = {Vector2(0, -1): N, Vector2(1, 0): E, 
+					  Vector2(0, 1): S, Vector2(-1, 0): W}
+					
 	tile_size = Map.cell_size
 	make_maze()
 	
@@ -29,6 +56,7 @@ func check_neighbors(cell, unvisited):
 	return list
 	
 func make_maze():
+	var iiframe = 1
 	var unvisited = []  # array of unvisited tiles
 	var stack = []
 	# fill the map with solid tiles
@@ -49,11 +77,19 @@ func make_maze():
 			var dir = next - current
 			var current_walls = Map.get_cellv(current) - cell_walls[dir]
 			var next_walls = Map.get_cellv(next) - cell_walls[-dir]
+			Map2.set_cellv(current, NO_ICON)
+			Map2.set_cellv(next, ICON)
+			
 			Map.set_cellv(current, current_walls)
 			Map.set_cellv(next, next_walls)
 			current = next
 			unvisited.erase(current)
 		elif stack:
 			current = stack.pop_back()
-		yield(get_tree(), 'idle_frame')
 		
+		if use_yield:
+			yield(get_tree(), 'idle_frame')
+			print("frame: %s, time: %s ms" % [iiframe, OS.get_ticks_msec() - start_time])
+		iiframe+=1
+	print("COMPLETE: frame: %s, time: %s ms" % [iiframe, OS.get_ticks_msec() - start_time])		
+	
