@@ -91,5 +91,7 @@ func make_maze():
 			yield(get_tree(), 'idle_frame')
 			print("frame: %s, time: %s ms" % [iiframe, OS.get_ticks_msec() - start_time])
 		iiframe+=1
-	print("COMPLETE: frame: %s, time: %s ms" % [iiframe, OS.get_ticks_msec() - start_time])		
+	var final_time = 	OS.get_ticks_msec() - start_time
+	var fps_eff = (float(iiframe)/final_time)*1000
+	print("COMPLETE: frame: %s, time: %s ms, FPS(effective): %s fps" % [iiframe, final_time, fps_eff])		
 	
